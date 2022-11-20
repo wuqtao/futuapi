@@ -39,6 +39,10 @@ func (netMgr *NetManager) Connect() error {
 	return nil
 }
 
+func (netMgr *NetManager) SendMsg() {
+
+}
+
 func (netMgr *NetManager) Close() {
 	netMgr.connection.Close()
 

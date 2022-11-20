@@ -11,11 +11,13 @@ import (
 	"nitrohsu.com/futu/api/initconnect"
 	"nitrohsu.com/futu/api/keepalive"
 	"nitrohsu.com/futu/api/qotgetorderbook"
+	"nitrohsu.com/futu/api/qotgetsecuritysnapshot"
 	"nitrohsu.com/futu/api/qotgetsubinfo"
 	"nitrohsu.com/futu/api/qotsub"
 	"nitrohsu.com/futu/api/trdgethistoryorderlist"
 	"nitrohsu.com/futu/api/trdunlocktrade"
 	"reflect"
+	"sync/atomic"
 )
 
 type Message struct {
@@ -23,7 +25,7 @@ type Message struct {
 	ProtoID      uint32    // protocol id, little Endian
 	protoFmtType uint8     // 0-Protobuf,1-Json
 	protoVer     uint8     // default is 0
-	serialNo     uint32    // auto increment
+	SerialNo     uint32    // auto increment
 	bodyLen      uint32    // package length
 	arrBodySHA1  [20]uint8 // package body sha1
 	arrReserved  [8]uint8  // keep extra
@@ -98,6 +100,16 @@ const (
 	P_Qot_RequestTradeDate        = 3219 //获取市场交易日，在线拉取不在本地计算
 )
 
+// 统一创建messaged接口，便于控制自增的serialNo
+func NewMsg(protoId int, body interface{}) *Message {
+	msg := Message{
+		ProtoID: uint32(protoId),
+		Body:    body,
+	}
+	msg.SerialNo = atomic.AddUint32(&globalSerialId, 1)
+	return &msg
+}
+
 func (message *Message) Write(writer *bufio.Writer) (nn int, err error) {
 	//
 	if message.Body == nil {
@@ -112,8 +124,6 @@ func (message *Message) Write(writer *bufio.Writer) (nn int, err error) {
 		log.Printf("write err. %d, %s", -1, errors.Unwrap(err))
 	}
 
-	message.serialNo = globalSerialId
-	globalSerialId += 1
 	message.bodyLen = uint32(len(body))
 	//
 	content := make([]byte, HEADER_LENGTH)
@@ -128,7 +138,7 @@ func (message *Message) Write(writer *bufio.Writer) (nn int, err error) {
 	offset += 1
 	content[offset] = uint8(0)
 	offset += 1
-	binary.LittleEndian.PutUint32(content[offset:], message.serialNo)
+	binary.LittleEndian.PutUint32(content[offset:], message.SerialNo)
 	offset += 4
 	binary.LittleEndian.PutUint32(content[offset:], message.bodyLen)
 	offset += 4
@@ -148,7 +158,7 @@ func (message *Message) Write(writer *bufio.Writer) (nn int, err error) {
 	}
 	jsonStr, _ := jsonPb.MarshalToString(pb)
 	log.Printf("w serial=%2d, id=%4d, packLen=%2d, sockLen=%3d, body=%s",
-		message.serialNo,
+		message.SerialNo,
 		message.ProtoID,
 		message.bodyLen,
 		headerN,
@@ -169,7 +179,7 @@ func (message *Message) Read(reader *bufio.Reader) (int, error) {
 	message.ProtoID = binary.LittleEndian.Uint32(header[2:6])
 	message.protoFmtType = header[6]
 	message.protoVer = header[7]
-	message.serialNo = binary.LittleEndian.Uint32(header[8:12])
+	message.SerialNo = binary.LittleEndian.Uint32(header[8:12])
 	message.bodyLen = binary.LittleEndian.Uint32(header[12:16])
 
 	i := 0
@@ -205,7 +215,7 @@ func (message *Message) Read(reader *bufio.Reader) (int, error) {
 
 	jsonStr, _ := jsonPb.MarshalToString(pb)
 	log.Printf("r serial=%2d, id=%4d, packLen=%2d, sockLen=%3d, body=%s",
-		message.serialNo,
+		message.SerialNo,
 		message.ProtoID,
 		message.bodyLen,
 		readTotal,
@@ -230,6 +240,8 @@ func newResp(protoId uint32) proto.Message {
 		return &trdgethistoryorderlist.Response{}
 	case P_Trd_UnlockTrade:
 		return &trdunlocktrade.Response{}
+	case P_Qot_GetSecuritySnapshot:
+		return &qotgetsecuritysnapshot.Response{}
 	}
 	return nil
 }

@@ -1,6 +1,7 @@
 package quote
 
 import (
+	"errors"
 	"github.com/golang/protobuf/proto"
 	"log"
 	"nitrohsu.com/futu/api/qotcommon"
@@ -13,17 +14,64 @@ import (
 	"nitrohsu.com/futu/conf"
 	"nitrohsu.com/futu/netmanager"
 	"nitrohsu.com/futu/protocol"
-	"time"
+	"sync"
 )
+
+var defaultQuote *Quote
+var once sync.Once
 
 type Quote struct {
 	Config    conf.Config
 	NetMgr    *netmanager.NetManager
-	FutuState *protocol.Handler
+	futuState *protocol.Handler
+	FuncCall  map[uint32]func(resp interface{})
+	funcLock  *sync.Mutex
 	SubStock  []*qotcommon.Security
 	account   map[trdcommon.TrdMarket]*trdcommon.TrdHeader
 	password  string
 	unlock    bool
+}
+
+func NewQuote(host, port string) (*Quote, error) {
+	quote := &Quote{
+		Config: conf.Config{
+			Host: host,
+			Port: port,
+		},
+	}
+	err := quote.Start()
+	if err != nil {
+		return nil, err
+	}
+	once.Do(func() {
+		defaultQuote = quote
+	})
+	return quote, nil
+}
+
+func GetDefaultQuote() (*Quote, error) {
+	if defaultQuote != nil {
+		return defaultQuote, nil
+	}
+	return nil, errors.New("default is not initialized , call new quote first please")
+}
+
+// 设置了callback的消息的回复不再传入统一的Resp通道，而是直接调用callback返回消息内容
+func (quote *Quote) SendMsgWithCallBack(protoId int, body interface{}, f func(resp interface{})) error {
+	msg := protocol.NewMsg(protoId, body)
+	if msg.SerialNo == 0 {
+		errors.New("the filed serialNo of msg must not be 0")
+	}
+	quote.funcLock.Lock()
+	quote.FuncCall[msg.SerialNo] = f
+	quote.funcLock.Unlock()
+	quote.futuState.SendMsg(msg)
+	return nil
+}
+
+func (quote *Quote) SendMsg(protoId int, body interface{}) {
+	msg := protocol.NewMsg(protoId, body)
+	quote.futuState.SendMsg(msg)
 }
 
 func (quote *Quote) Start() (err error) {
@@ -37,28 +85,38 @@ func (quote *Quote) Start() (err error) {
 		return
 	}
 
+	quote.funcLock = &sync.Mutex{}
+	quote.FuncCall = make(map[uint32]func(resp interface{}))
+
 	quote.account = make(map[trdcommon.TrdMarket]*trdcommon.TrdHeader)
-	quote.account[trdcommon.TrdMarket_TrdMarket_US] = &trdcommon.TrdHeader{
-		TrdEnv:    proto.Int32(int32(trdcommon.TrdEnv_TrdEnv_Real)),
-		AccID:     proto.Uint64(0),
-		TrdMarket: proto.Int32(int32(trdcommon.TrdMarket_TrdMarket_US)),
-	}
-	quote.account[trdcommon.TrdMarket_TrdMarket_HK] = &trdcommon.TrdHeader{
-		TrdEnv:    proto.Int32(int32(trdcommon.TrdEnv_TrdEnv_Real)),
-		AccID:     proto.Uint64(0),
-		TrdMarket: proto.Int32(int32(trdcommon.TrdMarket_TrdMarket_HK)),
-	}
-	quote.password = "MD5 YOUR PASSWORD"
-	quote.FutuState = &protocol.Handler{}
+	//quote.account[trdcommon.TrdMarket_TrdMarket_US] = &trdcommon.TrdHeader{
+	//	TrdEnv:    proto.Int32(int32(trdcommon.TrdEnv_TrdEnv_Real)),
+	//	AccID:     proto.Uint64(0),
+	//	TrdMarket: proto.Int32(int32(trdcommon.TrdMarket_TrdMarket_US)),
+	//}
+	//quote.account[trdcommon.TrdMarket_TrdMarket_HK] = &trdcommon.TrdHeader{
+	//	TrdEnv:    proto.Int32(int32(trdcommon.TrdEnv_TrdEnv_Real)),
+	//	AccID:     proto.Uint64(0),
+	//	TrdMarket: proto.Int32(int32(trdcommon.TrdMarket_TrdMarket_HK)),
+	//}
+	//quote.password = "MD5 YOUR PASSWORD"
+	quote.futuState = &protocol.Handler{}
 	//
-	if futuErr := quote.FutuState.Init(quote.NetMgr.WriteBuffer, quote.NetMgr.ReadBuffer, quote.password); futuErr != nil {
+	if futuErr := quote.futuState.Init(quote.NetMgr.WriteBuffer, quote.NetMgr.ReadBuffer, quote.password); futuErr != nil {
 		return futuErr
 	}
 	//
 	go func() {
 		for {
 			select {
-			case msg := <-quote.FutuState.Resp:
+			case msg := <-quote.futuState.Resp:
+				quote.funcLock.Lock()
+				if fn, ok := quote.FuncCall[msg.SerialNo]; ok {
+					go fn(msg.Body)
+					continue
+				}
+				quote.funcLock.Unlock()
+
 				switch msg.ProtoID {
 				case protocol.P_Qot_Sub:
 					quote.subResponse(msg.Body.(*qotsub.Response))
@@ -74,9 +132,9 @@ func (quote *Quote) Start() (err error) {
 			}
 		}
 	}()
-	time.Sleep(time.Duration(10) * time.Second)
+	//time.Sleep(time.Duration(10) * time.Second)
 	//quote.realOrderListRequest(quote.NetMgr.WriteBuffer)
-	quote.historyOrderListRequest(nil, quote.NetMgr.WriteBuffer)
+	//quote.historyOrderListRequest(nil)
 
 	return
 }
@@ -94,21 +152,19 @@ func (quote *Quote) realOrderListRequest(writer chan *protocol.Message) {
 		}
 	}
 	if !exist {
-		subRequest(stock, writer)
+		quote.subRequest(stock)
 	} else {
 		log.Printf("subed stock, %d=%s", stock.GetMarket(), stock.GetCode())
 	}
-	writer <- &protocol.Message{
-		ProtoID: protocol.P_Qot_GetOrderBook,
-		Body: &qotgetorderbook.Request{
-			C2S: &qotgetorderbook.C2S{
-				Num:      proto.Int32(10),
-				Security: stock,
-			}},
-	}
+	msg := protocol.NewMsg(protocol.P_Qot_GetOrderBook, &qotgetorderbook.Request{
+		C2S: &qotgetorderbook.C2S{
+			Num:      proto.Int32(10),
+			Security: stock,
+		}})
+	quote.futuState.SendMsg(msg)
 }
 
-func (quote *Quote) historyOrderListRequest(markets []trdcommon.TrdMarket, writer chan *protocol.Message) {
+func (quote *Quote) historyOrderListRequest(markets []trdcommon.TrdMarket) {
 
 	if markets == nil {
 		markets = make([]trdcommon.TrdMarket, 2)
@@ -116,20 +172,18 @@ func (quote *Quote) historyOrderListRequest(markets []trdcommon.TrdMarket, write
 		markets[1] = trdcommon.TrdMarket_TrdMarket_HK
 	}
 	for _, market := range markets {
-		writer <- &protocol.Message{
-			ProtoID: protocol.P_Trd_GetHistoryOrderList,
-			Body: &trdgethistoryorderlist.Request{
-				C2S: &trdgethistoryorderlist.C2S{
-					Header: quote.account[market],
-					FilterConditions: &trdcommon.TrdFilterConditions{
-						CodeList: []string{},
-						IdList:   []uint64{},
-						//YYYY-MM-DD HH:MM:SS
-						BeginTime: proto.String("2020-01-01 00:00:00"),
-						EndTime:   proto.String("2020-03-15 00:00:00"),
-					},
-				}},
-		}
+		msg := protocol.NewMsg(protocol.P_Trd_GetHistoryOrderList, &trdgethistoryorderlist.Request{
+			C2S: &trdgethistoryorderlist.C2S{
+				Header: quote.account[market],
+				FilterConditions: &trdcommon.TrdFilterConditions{
+					CodeList: []string{},
+					IdList:   []uint64{},
+					//YYYY-MM-DD HH:MM:SS
+					BeginTime: proto.String("2020-01-01 00:00:00"),
+					EndTime:   proto.String("2020-03-15 00:00:00"),
+				},
+			}})
+		quote.futuState.SendMsg(msg)
 	}
 }
 func (quote *Quote) realOrderListResponse(msg *qotgetorderbook.Response) {
@@ -164,19 +218,17 @@ func (quote *Quote) historyOrderListResponse(msg *trdgethistoryorderlist.Respons
 	}
 }
 
-func subRequest(stock *qotcommon.Security, writer chan *protocol.Message) {
-	writer <- &protocol.Message{
-		ProtoID: protocol.P_Qot_Sub,
-		Body: &qotsub.Request{
-			C2S: &qotsub.C2S{
-				IsFirstPush:  proto.Bool(false),
-				IsSubOrUnSub: proto.Bool(true),
-				SecurityList: []*qotcommon.Security{stock},
-				SubTypeList: []int32{
-					int32(qotcommon.SubType_SubType_OrderBook),
-				},
-			}},
-	}
+func (quote *Quote) subRequest(stock *qotcommon.Security) {
+	msg := protocol.NewMsg(protocol.P_Qot_Sub, &qotsub.Request{
+		C2S: &qotsub.C2S{
+			IsFirstPush:  proto.Bool(false),
+			IsSubOrUnSub: proto.Bool(true),
+			SecurityList: []*qotcommon.Security{stock},
+			SubTypeList: []int32{
+				int32(qotcommon.SubType_SubType_OrderBook),
+			},
+		}})
+	quote.futuState.SendMsg(msg)
 }
 
 func (quote *Quote) subResponse(msg *qotsub.Response) {
@@ -214,5 +266,5 @@ func (quote *Quote) unlockTradeResponse(msg *trdunlocktrade.Response) {
 
 func (quote *Quote) Close() {
 	quote.NetMgr.Close()
-	quote.FutuState.Close()
+	quote.futuState.Close()
 }
