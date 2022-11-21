@@ -51,11 +51,12 @@ func getSecuritySnapshot(symbols []string) (*qotgetsecuritysnapshot.Response, er
 		return nil, err
 	}
 	list := buildSecurityQuerys(symbols)
+
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	var res *qotgetsecuritysnapshot.Response
 
-	quoteCtx.SendMsgWithCallBack(protocol.P_Qot_GetSecuritySnapshot, list, func(resp interface{}) {
+	quoteCtx.SendMsgWithCallBack(protocol.P_Qot_GetSecuritySnapshot, &qotgetsecuritysnapshot.Request{C2S: &qotgetsecuritysnapshot.C2S{SecurityList: list}}, func(resp interface{}) {
 		defer wg.Done()
 		if cRes, ok := resp.(*qotgetsecuritysnapshot.Response); ok {
 			res = cRes
