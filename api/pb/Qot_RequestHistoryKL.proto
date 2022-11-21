@@ -1,7 +1,7 @@
 syntax = "proto2";
 package Qot_RequestHistoryKL;
 option java_package = "com.futu.openapi.pb";
-option go_package = "nitrohsu.com/futu/api/qotrequesthistorykl";
+option go_package = "github.com/wuqtao/futu/api/qotrequesthistorykl";
 
 import "Common.proto";
 import "Qot_Common.proto";

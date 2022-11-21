@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/wuqtao/futu/query"
+	"github.com/wuqtao/futu/quote"
 	"log"
-	"nitrohsu.com/futu/query"
-	"nitrohsu.com/futu/quote"
 	"os"
 	"os/signal"
 	"syscall"

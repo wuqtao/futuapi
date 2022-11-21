@@ -9,8 +9,8 @@ package trdreconfirmorder
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	common "nitrohsu.com/futu/api/common"
-	trdcommon "nitrohsu.com/futu/api/trdcommon"
+	common "github.com/wuqtao/futu/api/common"
+	trdcommon "github.com/wuqtao/futu/api/trdcommon"
 	reflect "reflect"
 	sync "sync"
 )

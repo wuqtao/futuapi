@@ -1,7 +1,7 @@
 syntax = "proto2";
 package Trd_SubAccPush;
 option java_package = "com.futu.openapi.pb";
-option go_package = "nitrohsu.com/futu/api/trdsubaccpush";
+option go_package = "github.com/wuqtao/futu/api/trdsubaccpush";
 
 import "Common.proto";
 

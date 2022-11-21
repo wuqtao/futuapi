@@ -1,7 +1,7 @@
 syntax = "proto2";
 package Qot_GetPlateSecurity;
 option java_package = "com.futu.openapi.pb";
-option go_package = "nitrohsu.com/futu/api/qotgetplatesecurity";
+option go_package = "github.com/wuqtao/futu/api/qotgetplatesecurity";
 
 import "Common.proto";
 import "Qot_Common.proto";

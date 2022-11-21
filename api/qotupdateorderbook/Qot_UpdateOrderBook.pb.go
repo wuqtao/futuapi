@@ -9,8 +9,8 @@ package qotupdateorderbook
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	_ "nitrohsu.com/futu/api/common"
-	qotcommon "nitrohsu.com/futu/api/qotcommon"
+	_ "github.com/wuqtao/futu/api/common"
+	qotcommon "github.com/wuqtao/futu/api/qotcommon"
 	reflect "reflect"
 	sync "sync"
 )

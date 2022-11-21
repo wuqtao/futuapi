@@ -1,7 +1,7 @@
 syntax = "proto2";
 package Qot_UpdateTicker;
 option java_package = "com.futu.openapi.pb";
-option go_package = "nitrohsu.com/futu/api/qotupdateticker";
+option go_package = "github.com/wuqtao/futu/api/qotupdateticker";
 
 import "Common.proto";
 import "Qot_Common.proto";

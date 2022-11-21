@@ -2,9 +2,9 @@ package netmanager
 
 import (
 	"bufio"
+	"github.com/wuqtao/futu/protocol"
 	"log"
 	"net"
-	"nitrohsu.com/futu/protocol"
 )
 
 type NetManager struct {

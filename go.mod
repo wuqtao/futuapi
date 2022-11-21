@@ -1,4 +1,4 @@
-module nitrohsu.com/futu
+module github.com/wuqtao/futu
 
 go 1.14
 

@@ -2,10 +2,10 @@ package query
 
 import (
 	"errors"
-	"nitrohsu.com/futu/api/qotcommon"
-	"nitrohsu.com/futu/api/qotgetsecuritysnapshot"
-	"nitrohsu.com/futu/protocol"
-	"nitrohsu.com/futu/quote"
+	"github.com/wuqtao/futu/api/qotcommon"
+	"github.com/wuqtao/futu/api/qotgetsecuritysnapshot"
+	"github.com/wuqtao/futu/protocol"
+	"github.com/wuqtao/futu/quote"
 	"strings"
 	"sync"
 )

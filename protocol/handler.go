@@ -3,12 +3,12 @@ package protocol
 import (
 	"errors"
 	"github.com/golang/protobuf/proto"
+	"github.com/wuqtao/futu/api/common"
+	"github.com/wuqtao/futu/api/initconnect"
+	"github.com/wuqtao/futu/api/keepalive"
+	"github.com/wuqtao/futu/api/qotgetsubinfo"
+	"github.com/wuqtao/futu/api/trdunlocktrade"
 	"log"
-	"nitrohsu.com/futu/api/common"
-	"nitrohsu.com/futu/api/initconnect"
-	"nitrohsu.com/futu/api/keepalive"
-	"nitrohsu.com/futu/api/qotgetsubinfo"
-	"nitrohsu.com/futu/api/trdunlocktrade"
 	"time"
 )
 
