@@ -9,8 +9,8 @@ package trdgetmarginratio
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	qotcommon "github.com/wuqtao/futu/api/qotcommon"
-	trdcommon "github.com/wuqtao/futu/api/trdcommon"
+	qotcommon "github.com/wuqtao/futuapi/api/qotcommon"
+	trdcommon "github.com/wuqtao/futuapi/api/trdcommon"
 	reflect "reflect"
 	sync "sync"
 )

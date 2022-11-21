@@ -1,7 +1,7 @@
 syntax = "proto2";
 package Qot_GetSuspend;
 option java_package = "com.futu.openapi.pb";
-option go_package = "github.com/wuqtao/futu/api/qotgetsuspend";
+option go_package = "github.com/wuqtao/futuapi/api/qotgetsuspend";
 
 import "Common.proto";
 import "Qot_Common.proto";

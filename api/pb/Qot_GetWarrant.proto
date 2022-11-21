@@ -1,7 +1,7 @@
 syntax = "proto2";
 package Qot_GetWarrant;
 option java_package = "com.futu.openapi.pb";
-option go_package = "github.com/wuqtao/futu/api/qotgetwarrant";
+option go_package = "github.com/wuqtao/futuapi/api/qotgetwarrant";
 
 import "Common.proto";
 import "Qot_Common.proto";

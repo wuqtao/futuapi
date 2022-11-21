@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/wuqtao/futu/query"
-	"github.com/wuqtao/futu/quote"
+	"github.com/wuqtao/futuapi/query"
+	"github.com/wuqtao/futuapi/quote"
 	"log"
 	"os"
 	"os/signal"

@@ -1,7 +1,7 @@
 syntax = "proto2";
 package Qot_UpdateBroker;
 option java_package = "com.futu.openapi.pb";
-option go_package = "github.com/wuqtao/futu/api/qotupdatebroker";
+option go_package = "github.com/wuqtao/futuapi/api/qotupdatebroker";
 
 import "Common.proto";
 import "Qot_Common.proto";

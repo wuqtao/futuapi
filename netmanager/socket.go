@@ -2,7 +2,7 @@ package netmanager
 
 import (
 	"bufio"
-	"github.com/wuqtao/futu/protocol"
+	"github.com/wuqtao/futuapi/protocol"
 	"log"
 	"net"
 )

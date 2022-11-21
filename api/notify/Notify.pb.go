@@ -9,7 +9,7 @@ package notify
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	common "github.com/wuqtao/futu/api/common"
+	common "github.com/wuqtao/futuapi/api/common"
 	reflect "reflect"
 	sync "sync"
 )

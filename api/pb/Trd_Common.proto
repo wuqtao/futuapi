@@ -1,7 +1,7 @@
 syntax = "proto2";
 package Trd_Common;
 option java_package = "com.futu.openapi.pb";
-option go_package = "github.com/wuqtao/futu/api/trdcommon";
+option go_package = "github.com/wuqtao/futuapi/api/trdcommon";
 
 import "Common.proto";
 

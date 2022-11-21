@@ -9,8 +9,8 @@ package trdupdateorderfill
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	_ "github.com/wuqtao/futu/api/common"
-	trdcommon "github.com/wuqtao/futu/api/trdcommon"
+	_ "github.com/wuqtao/futuapi/api/common"
+	trdcommon "github.com/wuqtao/futuapi/api/trdcommon"
 	reflect "reflect"
 	sync "sync"
 )

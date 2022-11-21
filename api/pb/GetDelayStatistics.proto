@@ -1,7 +1,7 @@
 syntax = "proto2";
 package GetDelayStatistics;
 option java_package = "com.futu.openapi.pb";
-option go_package = "github.com/wuqtao/futu/api/getdelaystatistics";
+option go_package = "github.com/wuqtao/futuapi/api/getdelaystatistics";
 
 import "Common.proto";
 

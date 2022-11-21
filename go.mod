@@ -1,4 +1,4 @@
-module github.com/wuqtao/futu
+module github.com/wuqtao/futuapi
 
 go 1.14
 

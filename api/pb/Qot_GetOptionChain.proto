@@ -1,7 +1,7 @@
 syntax = "proto2";
 package Qot_GetOptionChain;
 option java_package = "com.futu.openapi.pb";
-option go_package = "github.com/wuqtao/futu/api/qotgetoptionchain";
+option go_package = "github.com/wuqtao/futuapi/api/qotgetoptionchain";
 
 import "Common.proto";
 import "Qot_Common.proto";

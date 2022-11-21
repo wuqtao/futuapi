@@ -7,7 +7,7 @@
 package initconnect
 
 import (
-	_ "github.com/wuqtao/futu/api/common"
+	_ "github.com/wuqtao/futuapi/api/common"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

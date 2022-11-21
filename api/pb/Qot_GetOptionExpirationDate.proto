@@ -1,7 +1,7 @@
 syntax = "proto2";
 package Qot_GetOptionExpirationDate;
 option java_package = "com.futu.openapi.pb";
-option go_package = "github.com/wuqtao/futu/api/getoptionexpirationdate";
+option go_package = "github.com/wuqtao/futuapi/api/getoptionexpirationdate";
 
 import "Common.proto";
 import "Qot_Common.proto";

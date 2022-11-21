@@ -9,8 +9,8 @@ package getglobalstate
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	common "github.com/wuqtao/futu/api/common"
-	_ "github.com/wuqtao/futu/api/qotcommon"
+	common "github.com/wuqtao/futuapi/api/common"
+	_ "github.com/wuqtao/futuapi/api/qotcommon"
 	reflect "reflect"
 	sync "sync"
 )

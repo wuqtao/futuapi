@@ -9,7 +9,7 @@ package verification
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
-	_ "github.com/wuqtao/futu/api/common"
+	_ "github.com/wuqtao/futuapi/api/common"
 	reflect "reflect"
 	sync "sync"
 )
