@@ -17,7 +17,7 @@ func GetSecuritySnapshot(symbols []string) ([]*qotgetsecuritysnapshot.Snapshot, 
 	var resList []*qotgetsecuritysnapshot.Snapshot
 	var err error
 	lock := sync.Mutex{}
-	if len(symbols) <= 400 {
+	if len(symbols) <= 360 {
 		res, err := getSecuritySnapshot(symbols)
 		if err != nil {
 			return nil, err
